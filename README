@@ -1,0 +1,17 @@
+ele791
+======
+
+Graduation Project, Bachelor of Electrical Engineering ETS
+
+Dependencies
+------------
+
+Fedora:
+        .. code:: shell
+
+                sudo dnf install python3-zmq pandoc pandoc-pdf
+
+
+For more information see ./Documentation
+
+.. vim: ft=rst tw=80:
