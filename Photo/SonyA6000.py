@@ -2,11 +2,12 @@ import os
 
 import gphoto2 as gp
 
-class PTP:
+class ptpCamera:
     def __init__(self):
-        self.__context = gp.gp__context_new()
+	print("init camera")
+	self.camera_ready = True
+        self.__context = gp.gp_context_new()
         self.__camera = gp.check_result(gp.gp_camera_new())
-        self.camera_ready = True
         try:
             gp.gp_camera_init(self.__camera, self.__context)
         except gp.GPhoto2Error as ex:
@@ -16,10 +17,12 @@ class PTP:
             raise
         
     def usb_capture(self):
-        file_path = gp.check_result(gp.gp_camera_capture(
-            self.__camera, gp.GP_CAPTURE_IMAGE, self.__context))
-        return file_path
-
+	if self.camera_ready:
+        	file_path = gp.check_result(gp.gp_camera_capture(
+            	self.__camera, gp.GP_CAPTURE_IMAGE, self.__context))
+        	return file_path
+	else:
+		return None
     def download_file_from_camera(self, file_path, Targer="./Photo"):
         if not os.path.exists(Targer):
             os.makedirs(Targer)
@@ -49,5 +52,8 @@ class PTP:
         event = self.__camera.wait_for__event(__timeout, self.__context)
 
     def __del__(self):
+	print("del camera")
         if self.camera_ready:
-            gp.check_result(gp.gp_camera_exit(self.__camera, self.__context))
+           print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
+
+
