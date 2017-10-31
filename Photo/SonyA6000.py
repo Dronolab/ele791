@@ -2,6 +2,7 @@ import os
 
 import gphoto2 as gp
 
+
 class ptpCamera:
     def __init__(self):
 	print("init camera")
@@ -50,6 +51,13 @@ class ptpCamera:
 
     def watch_event(self, __timeout=10000):
         event = self.__camera.wait_for__event(__timeout, self.__context)
+        return event
+
+    def getEventType(self,event):
+        pass
+
+    def handleEvent(self, event):
+        pass
 
     def __del__(self):
 	print("del camera")
@@ -57,3 +65,6 @@ class ptpCamera:
            print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
 
 
+class Event:
+    NEW_PICTURE = 1
+    CONFIG = 0

@@ -1,6 +1,7 @@
 import time
 from multiprocessing import Process , Queue, Lock
 from processAbstract import ProcessAbstract
+from Gpio import Gpio
 
 class FlashSync(ProcessAbstract):
     PULL_INTERVAL = 0.005 # pull interval for flash in s
@@ -10,7 +11,7 @@ class FlashSync(ProcessAbstract):
     def __init__(self):
         ProcessAbstract.__init__(self)
         print("GPIO_PIN")
-        self.GPIO_pin = self.GPIO_PIN
+        self.__gpio = Gpio(self.GPIO_PIN, "in")
 
     def getFlashTime(self):
         return self.qetTimeFromQueue()
@@ -18,7 +19,7 @@ class FlashSync(ProcessAbstract):
 
     def _process(self):
         last_value = self.DEFAULT_VAUE
-        f = open("val", "r")
+        f = open(self.__gpio.getFileName, "r")
         print(f.read(1))
         while not self._kill:
             with self._process_lock:

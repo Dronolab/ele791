@@ -8,23 +8,30 @@ class Gpio():
         self.__direction = direction
         self.__exportPin(self.__pin)
         self.__setPinDirection(self.__pin, self.__direction)
+        gpiopin = "gpio%s" % (str(self.__pin),)
+        self.__valuefilename = "/sys/class/gpio/"+gpiopin+"/value"
+        self.__exportPin()
+        self.__setPinDirection()
 
-    def __exportPin(self, pin):
+    def __exportPin(self):
         try:
             f = open("/sys/class/gpio/export","w")
-            f.write(str(pin))
+            f.write(str(self.__pin))
             f.close()
         except IOError:
-            print( "GPIO %s already Exists, so skipping export gpio" % (str(pin), ))
+            print( "GPIO %s already Exists, so skipping export gpio" % (str(self.__pin)))
 
-    def __setPinDirection(self, pin, direction):
-        gpiopin = "gpio%s" % (str(pin), )
+    def getFileName(self):
+        return self.__valuefilename
+
+    def __setPinDirection(self):
+        gpiopin = "gpio%s" % (str(self.__pin))
         pin = open("/sys/class/gpio/"+gpiopin+"/direction", "w")
-        pin.write(direction)
+        pin.write(self.__direction)
         pin.close()
 
-    def writepin(self, pin, pin_value):
-        gpiopin = "gpio%s" % (str(pin), )
+    def writepin(self,pin_value):
+        gpiopin = "gpio%s" % (str(self.__pin))
         pin = open("/sys/class/gpio/"+gpiopin+"/value", "w")
         if pin_value == 1:
           pin.write("1")
@@ -32,8 +39,8 @@ class Gpio():
           pin.write("0")
         pin.close()
 
-    def readpins(self,pin):
-        gpiopin = "gpio%s" % (str(pin), )
+    def readpins(self):
+        gpiopin = "gpio%s" % (str(self.__pin))
         pin = open("/sys/class/gpio/"+gpiopin+"/value", "r")
         value = pin.read()
         pin.close()
