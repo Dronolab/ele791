@@ -10,6 +10,7 @@ Fedora:
         .. code:: shell
 
                 sudo dnf install python3-zmq pandoc pandoc-pdf
+                ./setup-environment
 
 
 For more information see ./Documentation

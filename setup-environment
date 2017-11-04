@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# easy setup script to install tensorflow in virtualenv
+
+PRJNAME="${1:-python_ele791}"
+
+GPU="no"
+
+setup_tensorflow() {
+	sudo dnf install python3-pip python3-devel python-virtualenv
+	if [ "${GPU}" == "yes" ]; then
+		echo "you need to install extra stuff...."
+	fi
+
+	virtualenv --system-site-packages -p python3 "${PRJNAME}"
+
+	source "${PRJNAME}/bin/activate"
+	easy_install -U pip
+	pip3 install --upgrade tensorflow
+	test "${GPU}" == "yes" && pip3 install --upgrade tensorflow-gpu
+
+	echo also installing tflearn
+	pip install tflearn
+
+	echo "you can now run 'source ${PRJNAME}/bin/activate' and start working"
+}
+
+setup_tensorflow

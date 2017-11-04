@@ -1,3 +1,7 @@
+# project specific
+python_ele791/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
