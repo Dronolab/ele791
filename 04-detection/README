@@ -1,0 +1,15 @@
+Large files used here can be found on our google drive.
+
+Untrained model
+---------------
+files required:
+ - dronoset.pickle OR train_images.zip
+
+Pretrained model
+----------------
+files required:
+ - dronoset_model.tfl.data-00000-of-00001
+ - dronoset_model.tfl.index
+ - dronoset_model.tfl.meta
+ - 32x32 RGB image to be evaluated
+
