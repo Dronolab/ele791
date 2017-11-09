@@ -3,7 +3,7 @@ from multiprocessing import Queue, Process, Lock
 class ProcessAbstract:
     def __init__(self):
         self._timeQueue = Queue()
-        self._kill = True
+        self._kill = False
         self._process_lock = Lock()
         self._proc = None
         self._createNewProcess()
@@ -19,7 +19,7 @@ class ProcessAbstract:
         self._proc.terminate()
 
     def softProcessStop(self):
-        self._kill = False
+        self._kill = True
         self._proc.join()
 
     def pauseLoop(self):
@@ -37,3 +37,5 @@ class ProcessAbstract:
         else:
             return None
 
+    def getTimeQueue(self):
+        return self._timeQueue

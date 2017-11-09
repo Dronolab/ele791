@@ -6,8 +6,6 @@ class Gpio():
         # self.__path = os.path.normpath("/sys/class/gpio/")
         self.__pin = pin
         self.__direction = direction
-        self.__exportPin(self.__pin)
-        self.__setPinDirection(self.__pin, self.__direction)
         gpiopin = "gpio%s" % (str(self.__pin),)
         self.__valuefilename = "/sys/class/gpio/"+gpiopin+"/value"
         self.__exportPin()
@@ -22,6 +20,7 @@ class Gpio():
             print( "GPIO %s already Exists, so skipping export gpio" % (str(self.__pin)))
 
     def getFileName(self):
+        print(self.__valuefilename)
         return self.__valuefilename
 
     def __setPinDirection(self):
