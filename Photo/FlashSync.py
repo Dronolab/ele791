@@ -2,16 +2,19 @@ import time
 from multiprocessing import Process , Queue, Lock
 from processAbstract import ProcessAbstract
 from Gpio import Gpio
+import GeneralSettings
 
 class FlashSync(ProcessAbstract):
     PULL_INTERVAL = 0.005 # pull interval for flash in s
     DEFAULT_VAUE = 1
-    GPIO_PIN = 398
+    GPIO_PIN = GeneralSettings.FLASHGPIOPIN
+    FLASHLATENCY = 0.06
 
     def __init__(self):
         ProcessAbstract.__init__(self)
         print("GPIO_PIN")
-        self.__gpio = Gpio(self.GPIO_PIN, "in")
+        if not GeneralSettings.FAKEIO:
+            self.__gpio = Gpio(self.GPIO_PIN, "in")
 
     def getFlashTime(self):
         return self.qetTimeFromQueue()
@@ -19,15 +22,28 @@ class FlashSync(ProcessAbstract):
 
     def _process(self):
         last_value = self.DEFAULT_VAUE
-        f = open(self.__gpio.getFileName, "r")
-        print(f.read(1))
+        if not GeneralSettings.FAKEIO:
+            print(self.__gpio.getFileName())
+            f = open(self.__gpio.getFileName(), "r")
+            print("asdasDASDSADSAD")
+        else:
+            f = open("val", "r")
+
         while not self._kill:
             with self._process_lock:
-                f.seek(0)
-                print("hello")
-                val = int(f.read(1))
-                if last_value == 1 and val == 0: # falling edge detection
+                if not GeneralSettings.FAKEIO:
+                    f.seek(0)
+                    val = (f.read(1))
+                    val = int(val)
+                    # print(val)
+                    if last_value == 1 and val == 0: # falling edge detection
+                        self.addTimeToQueue(time.time()- self.FLASHLATENCY)
+                    last_value = val
+                    if val == 0 :
+                        print(val)
+                    time.sleep(self.PULL_INTERVAL)
+                else:
                     self.addTimeToQueue(time.time())
-                last_value = val
-                time.sleep(self.PULL_INTERVAL)
+                    time.sleep(1)
+
         f.close()

@@ -4,9 +4,13 @@ import gphoto2 as gp
 
 
 class ptpCamera:
+    EVENT_FILE_ADDED = gp.GP_EVENT_FILE_ADDED
+    EVENT_FOLDER_ADDED = gp.GP_EVENT_FOLDER_ADDED
+    EVENT_PTP_CONFIG = 0
+
     def __init__(self):
-	print("init camera")
-	self.camera_ready = True
+        print("init camera")
+        self.camera_ready = True
         self.__context = gp.gp_context_new()
         self.__camera = gp.check_result(gp.gp_camera_new())
         try:
@@ -18,12 +22,13 @@ class ptpCamera:
             raise
         
     def usb_capture(self):
-	if self.camera_ready:
-        	file_path = gp.check_result(gp.gp_camera_capture(
-            	self.__camera, gp.GP_CAPTURE_IMAGE, self.__context))
-        	return file_path
-	else:
-		return None
+        if self.camera_ready:
+                file_path = gp.check_result(gp.gp_camera_capture(
+                    self.__camera, gp.GP_CAPTURE_IMAGE, self.__context))
+                return file_path
+        else:
+            return None
+
     def download_file_from_camera(self, file_path, Targer="./Photo"):
         if not os.path.exists(Targer):
             os.makedirs(Targer)
@@ -32,7 +37,6 @@ class ptpCamera:
             self.__camera, file_path.folder, file_path.name,
             gp.GP_FILE_TYPE_NORMAL, self.__context))
         gp.check_result(gp.gp_file_save(camera_file, target))
-
     def list_files(self, path='/'):
         result = []
         # get files
@@ -50,19 +54,21 @@ class ptpCamera:
         return result
 
     def watch_event(self, __timeout=10000):
-        event = self.__camera.wait_for__event(__timeout, self.__context)
+        event = self.__camera.wait_for_event(__timeout, self.__context)
         return event
 
     def getEventType(self,event):
-        pass
+        return event[0]
 
-    def handleEvent(self, event):
-        pass
+    def downloadPictureFromEvent(self, event):
+        if event[0] == self.EVENT_FILE_ADDED:
+            self.download_file_from_camera(event[1])
+
 
     def __del__(self):
-	print("del camera")
+        print("del camera")
         if self.camera_ready:
-           print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
+            print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
 
 
 class Event:

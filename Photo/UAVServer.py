@@ -4,12 +4,17 @@ from time import sleep
 from FlashSync import FlashSync
 from Trigger import Trigger
 from CameraPTP import Camera
+from photoSync import PhotoSync
+
+import GeneralSettings
 
 class Server:
     def __init__(self):
         self.flash_sync = FlashSync()
         self.trigger = Trigger()
         self.cameraPTP = Camera()
+        self.photoSync = PhotoSync("./Photo/", self.flash_sync.getTimeQueue(), self.cameraPTP.getTimeQueue())
+
 
 
     def serverStart(self):
@@ -17,16 +22,11 @@ class Server:
         self.flash_sync.start()
         self.trigger.start()
         self.cameraPTP.start()
-        sleep(10)
-        print("asdads")
-        self.trigger._kill = True
+        self.photoSync.start()
 
-
-        while True:
-            time = self.flash_sync.getFlashTime()
-            print(time)
-            if time == None:
-                break
+    def cmdWatcher(self):
+        print("cmd watcher")
+        sleep(100)
 
 
 
