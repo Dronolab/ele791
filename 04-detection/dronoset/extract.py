@@ -21,8 +21,15 @@ SHAPE_LABELS = (
     'Octagon',
     'Star',
     'QRcode',
-    'no target'
+    'No Target'
 )
+
+TARGET_LABELS = (
+    'Target',
+    'No Target'
+)
+
+DIR = os.path.dirname(__file__)
 
 
 def maybe_extract(archive='train_images.zip', workdir='dronoset'):
@@ -52,14 +59,14 @@ def maybe_unpickle(filename):
     return dataset
 
 
-def load_data():
-    X, Y = maybe_unpickle('dronoset.pickle')
-    workdir = maybe_extract()
-
-    image_paths = [os.path.join(workdir, f) for f in os.listdir(workdir)
-                   if f.endswith('.jpg')]
+def load_data(target_only=False):
+    X, Y = maybe_unpickle(os.path.join(DIR, 'dronoset.pickle'))
 
     if len(X) + len(Y) == 0:
+        workdir = maybe_extract()
+        image_paths = [os.path.join(workdir, f) for f in os.listdir(workdir)
+                       if f.endswith('.jpg')]
+
         n = len(image_paths)
         X = np.empty(shape=(n, 32, 32, 3))
         Y = []
@@ -77,7 +84,10 @@ def load_data():
 
         bar.finish()
 
-    pickle_dataset('dronoset.pickle', (X, Y))
+        pickle_dataset('dronoset.pickle', (X, Y))
+
+    if target_only:
+        Y = [int(y == 13) for y in Y]
 
     return (X, Y)
 
@@ -94,7 +104,10 @@ def load_sample(filename, show=False):
 
 def unpack(prediction):
     n = np.argmax(prediction)
-    return SHAPE_LABELS[n]
+    if len(prediction) > 2:
+        return SHAPE_LABELS[n]
+    else:
+        return TARGET_LABELS[n]
 
 
 if __name__ == '__main__':
