@@ -1,8 +1,9 @@
 import time
-from multiprocessing import Process , Queue, Lock
-from processAbstract import ProcessAbstract
-from Gpio import Gpio
+
 import GeneralSettings
+from Gpio import Gpio
+from processAbstract import ProcessAbstract
+
 
 class FlashSync(ProcessAbstract):
     PULL_INTERVAL = 0.005 # pull interval for flash in s

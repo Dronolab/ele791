@@ -5,3 +5,8 @@ FAKEIO = True
 FLASHGPIOPIN = 298
 TRIGGERGPIOPIN = 388
 
+endpoint_sub = "tcp://127.0.0.1:5556"
+endpoint_pub = "tcp://127.0.0.1:5555"
+
+server_endpoint_sub = "tcp://*:5556"
+server_endpoint_pub = "tcp://*:5555"

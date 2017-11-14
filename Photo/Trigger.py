@@ -1,8 +1,10 @@
 
 import time
-from processAbstract import ProcessAbstract
-from Gpio import Gpio
+
 import GeneralSettings
+from Gpio import Gpio
+from processAbstract import ProcessAbstract
+
 
 class Trigger(ProcessAbstract):
     GPIO_PIN = GeneralSettings.TRIGGERGPIOPIN

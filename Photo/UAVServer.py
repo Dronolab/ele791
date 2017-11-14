@@ -1,12 +1,10 @@
-from multiprocessing import  Process
 from time import sleep
 
+from CameraPTP import Camera
 from FlashSync import FlashSync
 from Trigger import Trigger
-from CameraPTP import Camera
 from photoSync import PhotoSync
 
-import GeneralSettings
 
 class Server:
     def __init__(self):

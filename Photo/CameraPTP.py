@@ -1,8 +1,12 @@
-from multiprocessing import Queue, Process, Lock
 import time
 from processAbstract import ProcessAbstract
 
+
+import time
+
 import GeneralSettings
+from processAbstract import ProcessAbstract
+
 if not GeneralSettings.FAKEIO:
     from SonyA6000 import ptpCamera
 
