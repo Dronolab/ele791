@@ -13,7 +13,8 @@ class ProcessAbstract:
         self._proc.daemon = True
 
     def start(self):
-        self._proc.start()
+        if not self._proc == None:
+            self._proc.start()
 
     def hardProcessStop(self):
         self._proc.terminate()

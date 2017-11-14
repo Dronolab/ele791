@@ -15,3 +15,12 @@ def createSubSocket(topic_filter):
     socket.setsockopt_string(zmq.SUBSCRIBE, topic_filter)
     return socket
 
+def publishMsg(socket, topic, msg):
+    print(msg)
+    socket.send_string("%s %s" % (topic, msg))
+
+
+def subReadMsg(socket):
+    string = socket.recv()
+    return string
+

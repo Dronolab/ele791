@@ -17,5 +17,7 @@ socket_sub.setsockopt_string(zmq.SUBSCRIBE, topicfilter)
 
 
 while True:
+    print("Broker loop")
     string = socket_sub.recv()
+    print(string)
     socket_pub.send(string)
