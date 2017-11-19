@@ -37,6 +37,7 @@ class ptpCamera:
             self.__camera, file_path.folder, file_path.name,
             gp.GP_FILE_TYPE_NORMAL, self.__context))
         gp.check_result(gp.gp_file_save(camera_file, target))
+
     def list_files(self, path='/'):
         result = []
         # get files
@@ -71,6 +72,3 @@ class ptpCamera:
             print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
 
 
-class Event:
-    NEW_PICTURE = 1
-    CONFIG = 0

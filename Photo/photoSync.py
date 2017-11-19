@@ -5,7 +5,9 @@ from processAbstract import ProcessAbstract
 import time
 
 class PhotoSync(ProcessAbstract):
-    POLLINTERVAL = 1
+    POLLINTERVAL = 1 # Poll interval to watch for new file in sec
+    PHOTO_SYNC_TOPIC = "photo_time_referenced"
+
     def __init__(self,path, flashQueue, cameraQueue):
         ProcessAbstract.__init__(self)
         self._path = path
