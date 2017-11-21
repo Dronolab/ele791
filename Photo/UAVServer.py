@@ -2,14 +2,14 @@ from time import sleep
 
 from CameraPTP import Camera
 from FlashSync import FlashSync
-from Trigger import Trigger
+from TriggerHandler import TriggerHandler
 from photoSync import PhotoSync
 
 
 class Server:
     def __init__(self):
         self.flash_sync = FlashSync()
-        self.trigger = Trigger()
+        self.trigger = TriggerHandler()
         self.cameraPTP = Camera()
         self.photoSync = PhotoSync("./Photo/", self.flash_sync.getTimeQueue(), self.cameraPTP.getTimeQueue())
 

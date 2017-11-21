@@ -1,12 +1,8 @@
 import time
-from processAbstract import ProcessAbstract
-
-
-import time
 
 import GeneralSettings
+from ZmqUtility import zmqSocket
 from processAbstract import ProcessAbstract
-import ZmqSocket
 
 if not GeneralSettings.FAKEIO:
     from SonyA6000 import ptpCamera
@@ -20,7 +16,7 @@ class Camera(ProcessAbstract):
             self.__ptpCamera = ptpCamera()
 
     def _process(self):
-        self._pubSocket = ZmqSocket.createPubSocket()
+        self._pubSocket = zmqSocket.createPubSocket()
         while not self._kill:
 
             if not GeneralSettings.FAKEIO:
@@ -30,12 +26,12 @@ class Camera(ProcessAbstract):
                         self.addTimeToQueue(curent)
                         self.__ptpCamera.downloadPictureFromEvent(event)
                         msg = curent
-                        ZmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg )
+                        zmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg)
                         print("new file added")
                     print("helllo")
             else :
                 time.sleep(1)
                 self.addTimeToQueue(time.time())
                 msg = time.time()
-                ZmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg)
+                zmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg)
 

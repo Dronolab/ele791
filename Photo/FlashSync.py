@@ -2,8 +2,8 @@ import time
 
 import GeneralSettings
 from Gpio import Gpio
+from ZmqUtility import zmqSocket
 from processAbstract import ProcessAbstract
-import ZmqSocket
 
 
 class FlashSync(ProcessAbstract):
@@ -26,7 +26,7 @@ class FlashSync(ProcessAbstract):
 
     def _process(self):
         print("asdasDASDSADSAD")
-        self._pubSocket = ZmqSocket.createPubSocket()
+        self._pubSocket = zmqSocket.createPubSocket()
         last_value = self.DEFAULT_VAUE
         if not GeneralSettings.FAKEIO:
             print(self.__gpio.getFileName())
@@ -45,7 +45,7 @@ class FlashSync(ProcessAbstract):
                     if last_value == 1 and val == 0: # falling edge detection
                         current = (time.time() -self.FLASHLATENCY)
                         self.addTimeToQueue(current)
-                        ZmqSocket.publishMsg(self._pubSocket, self.FLASH_TOPIC, current)
+                        zmqSocket.publishMsg(self._pubSocket, self.FLASH_TOPIC, current)
                     last_value = val
                     if val == 0 :
                         print(val)

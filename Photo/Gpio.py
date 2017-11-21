@@ -1,5 +1,6 @@
 
 import os
+import GeneralSettings
 
 class Gpio():
     def __init__(self, pin, direction):
@@ -8,6 +9,8 @@ class Gpio():
         self.__direction = direction
         gpiopin = "gpio%s" % (str(self.__pin),)
         self.__valuefilename = "/sys/class/gpio/"+gpiopin+"/value"
+
+        #initialise GPIO
         self.__exportPin()
         self.__setPinDirection()
 
@@ -44,4 +47,25 @@ class Gpio():
         value = pin.read()
         pin.close()
         return int(value)
-    
+
+class triggerGPIO(Gpio):
+    ON_VALUE = 1
+    OFF_VALUE = 0
+    DIRECTION = "out"
+    def __init__(self):
+        super(triggerGPIO, self).__init__(GeneralSettings.TRIGGERGPIOPIN, self.DIRECTION)
+
+    def activatePin(self):
+        self.writepin(self.ON_VALUE)
+
+    def unActivatePin(self):
+        self.writepin(self.OFF_VALUE)
+
+class flashGPIO(Gpio):
+    ON_VALUE = 0
+    OFF_VALUE = 1
+    DIRECTION = "in"
+    def __init__(self):
+        super(flashGPIO, self).__init__(GeneralSettings.FLASHGPIOPIN, self.DIRECTION)
+
+
