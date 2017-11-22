@@ -1,5 +1,6 @@
 import json
 
+
 #abstract class for message generation
 class BaseMsg:
     TOPIC = ""
@@ -12,14 +13,12 @@ class BaseMsg:
         # print(msg)
         topic = msg.split()[0]
         msg = str(msg)
-        print(topic)
         msg = msg.replace(topic, "")
         messagedata = json.loads(msg)
         if topic == self.TOPIC:
             keys = self.__dict__.keys()
             for key in keys:
                 if key is not "message_type":
-
                     setattr(self, key,messagedata.get(key, None))
 
 
@@ -125,3 +124,18 @@ class TakePicture(BaseMsg):
 
     def getNbCaptureTodo(self):
         return self.nb_capture_todo
+
+
+def MsgHandeler(msg):
+    MsgList = [TakePicture(), PictureTaken(), PictureGeotaged(), PictureDownloaded(), PictureTimeReferenced()]
+    topic = msg.split()[0]
+    good_obj = None
+
+    for obj in MsgList:
+        if topic == obj.TOPIC:
+            tmp = obj
+            tmp.decodeMSG(msg)
+            good_obj = tmp
+            print(tmp.message_type)
+
+    return good_obj
