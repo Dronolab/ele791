@@ -11,7 +11,7 @@ class Server:
         self.flash_sync = FlashSync()
         self.trigger = TriggerHandler()
         self.cameraPTP = Camera()
-        self.photoSync = PhotoSync("./Photo/", self.flash_sync.getTimeQueue(), self.cameraPTP.getTimeQueue())
+        self.photoSync = PhotoSync("./01-Capture/", self.flash_sync.getTimeQueue(), self.cameraPTP.getTimeQueue())
 
 
 

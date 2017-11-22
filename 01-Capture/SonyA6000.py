@@ -29,7 +29,7 @@ class ptpCamera:
         else:
             return None
 
-    def download_file_from_camera(self, file_path, Targer="./Photo"):
+    def download_file_from_camera(self, file_path, Targer="./01-Capture"):
         if not os.path.exists(Targer):
             os.makedirs(Targer)
         target = os.path.join(Targer, file_path.name)
