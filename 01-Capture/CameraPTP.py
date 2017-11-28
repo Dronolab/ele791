@@ -2,6 +2,7 @@ import time
 
 import GeneralSettings
 from ZmqUtility import zmqSocket
+from ZmqUtility.MsgDefinition import PictureDownloaded
 from processAbstract import ProcessAbstract
 
 if not GeneralSettings.FAKEIO:
@@ -15,6 +16,14 @@ class Camera(ProcessAbstract):
         if not GeneralSettings.FAKEIO :
             self.__ptpCamera = ptpCamera()
 
+    def notifyPictureDownloaded(self,unix,file_path):
+        msgClass = PictureDownloaded()
+        msgClass.setDownloadTime(unix)
+        msgClass.setFilePath(file_path)
+
+        self.addTimeToQueue(unix)
+        zmqSocket.publishMsg(self._pubSocket, msgClass.generateMsg())
+
     def _process(self):
         self._pubSocket = zmqSocket.createPubSocket()
         while not self._kill:
@@ -23,15 +32,12 @@ class Camera(ProcessAbstract):
                     event = self.__ptpCamera.watch_event()
                     if (self.__ptpCamera.getEventType(event) == self.__ptpCamera.EVENT_FILE_ADDED):
                         curent = time.time()
-                        self.addTimeToQueue(curent)
-                        self.__ptpCamera.downloadPictureFromEvent(event)
-                        msg = curent
-                        zmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg)
+                        picture_path =self.__ptpCamera.downloadPictureFromEvent(event)
+                        self.notifyPictureDownloaded(curent, picture_path)
                         print("new file added")
-                    print("helllo")
+
             else :
                 time.sleep(1)
-                self.addTimeToQueue(time.time())
-                msg = time.time()
-                zmqSocket.publishMsg(self._pubSocket, self.EVENT_NEW_PICTURE_TOPIC, msg)
+                curent = time.time()
+                self.notifyPictureDownloaded(curent, None)
 

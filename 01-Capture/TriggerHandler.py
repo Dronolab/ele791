@@ -5,6 +5,7 @@ from abc import abstractmethod
 import GeneralSettings
 from Gpio import triggerGPIO, Gpio
 from ZmqUtility import zmqSocket
+from ZmqUtility.MsgDefinition import TriggerAction
 from processAbstract import ProcessAbstract
 
 
@@ -19,7 +20,6 @@ class TriggerHandler(ProcessAbstract):
 
     def __init__(self):
         ProcessAbstract.__init__(self)
-
         if not GeneralSettings.FAKEIO:
             self.__gpio = Gpio(self.GPIO_PIN, "out")
             self.__gpio.writepin(self.GPIO_DEFAULT_VALUE)
@@ -27,14 +27,13 @@ class TriggerHandler(ProcessAbstract):
 
     def _process(self):
         print("trigger process")
-        self._pubSocket = zmqSocket.createPubSocket()
         while not self._kill:
             if not GeneralSettings.FAKEIO:
-                st = SingleTrigger()
+                st = SingleTrigger(self.__timeQueue)
                 st.capture()
 
             else:
-                st = FakeSingleTrigger()
+                st = FakeSingleTrigger(self._timeQueue)
                 st.capture()
                 self.addTimeToQueue(time.time())
 
@@ -50,9 +49,11 @@ class triggerConstructor:
         pass
 
 class BaseTrigger():
-    def __init__(self):
+    def __init__(self,queue):
         self.nb_capture = 0
         self.nb_capture_left = 0
+        self.zmqPubSocket = zmqSocket.createPubSocket()
+        self.timeQueue = queue
 
     @abstractmethod
     def trigger_on(self):
@@ -65,6 +66,26 @@ class BaseTrigger():
     def capture(self):
         pass
 
+    def pubNotifyTriggre(self,msgClass):
+        zmqSocket.publishMsg(self.zmqPubSocket, msgClass.generateMsg())
+
+    def notifyTriggerOn(self):
+        current = time.time()
+        msgClass = TriggerAction()
+        msgClass.setUnixTime(current)
+        msgClass.setActionType("on")
+        self.pubNotifyTriggre(msgClass)
+
+
+    def notifyTriggerOff(self):
+        current = time.time()
+        msgClass = TriggerAction()
+        msgClass.setUnixTime(current)
+        msgClass.setActionType("on")
+        self.pubNotifyTriggre(msgClass)
+
+
+
 class SingleTrigger(BaseTrigger):
     TRIGGER_TIME = 0.3
     TRIGGER_WAIT = 0.8
@@ -73,21 +94,18 @@ class SingleTrigger(BaseTrigger):
     GPIO_TRIG_ON = 1
     GPIO_TRIG_OFF = 0
 
-    def __init__(self,GPIO_PIN):
-        BaseTrigger.__init__()
+    def __init__(self,GPIO_PIN,queue):
+        BaseTrigger.__init__(queue)
         self.triggerGpio = triggerGPIO()
-        self.zmqPubSocket = zmqSocket.createPubSocket()
-
 
     def trigger_on(self):
         self.triggerGpio.activatePin()
-        current = time.time()
-        zmqSocket.publishMsg(self.zmqPubSocket, self.TRIGGER_ON_TOPIC, current) # to be modify
+        self.notifyTriggerOn()
         time.sleep(self.TRIGGER_TIME)
 
     def trigger_off(self):
         self.triggerGpio.unActivatePin()
-        zmqSocket.publishMsg(self.zmqPubSocket, self.TRIGGER_OFF_TOPIC, time.time())
+        self.notifyTriggerOff()
         time.sleep(self.TRIGGER_WAIT)
 
     def capture(self, loop = False, nb_cap_todo = 1):
@@ -112,22 +130,19 @@ class FakeSingleTrigger(BaseTrigger):
 
     def __init__(self,GPIO_PIN):
         BaseTrigger.__init__()
-        self.zmqPubSocket = zmqSocket.createPubSocket()
-
 
     def trigger_on(self):
         f = open("val", "w")
         f.write(str(self.GPIO_TRIG_ON))
         f.close()
-        current = time.time()
-        zmqSocket.publishMsg(self.zmqPubSocket, self.TRIGGER_ON_TOPIC, current) # to be modify
+        self.notifyTriggerOn()
         time.sleep(self.TRIGGER_TIME)
 
     def trigger_off(self):
         f = open("val", "w")
         f.write(str(self.GPIO_TRIG_OFF))
         f.close()
-        zmqSocket.publishMsg(self.zmqPubSocket, self.TRIGGER_OFF_TOPIC, time.time())
+        self.notifyTriggerOff()
         time.sleep(self.TRIGGER_WAIT)
 
     def capture(self, loop = False, nb_cap_todo = 1):

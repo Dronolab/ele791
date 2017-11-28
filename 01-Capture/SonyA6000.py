@@ -37,6 +37,7 @@ class ptpCamera:
             self.__camera, file_path.folder, file_path.name,
             gp.GP_FILE_TYPE_NORMAL, self.__context))
         gp.check_result(gp.gp_file_save(camera_file, target))
+        return target
 
     def list_files(self, path='/'):
         result = []
@@ -63,8 +64,10 @@ class ptpCamera:
 
     def downloadPictureFromEvent(self, event):
         if event[0] == self.EVENT_FILE_ADDED:
-            self.download_file_from_camera(event[1])
+            return self.download_file_from_camera(event[1])
 
+        else:
+            return None
 
     def __del__(self):
         print("del camera")

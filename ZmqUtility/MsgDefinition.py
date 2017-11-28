@@ -8,7 +8,8 @@ class BaseMsg:
         data = json.dumps(self.__dict__)
         msg = "%s %s" %(self.TOPIC, data)
         return msg
-    #decode a json msg with topic
+
+    #decode a json msg with from  topic
     def decodeMSG(self, msg):
         # print(msg)
         topic = msg.split()[0]
@@ -20,6 +21,7 @@ class BaseMsg:
             for key in keys:
                 if key is not "message_type":
                     setattr(self, key,messagedata.get(key, None))
+        return messagedata.get("message_type", None)
 
 
 class PictureGeotaged(BaseMsg):
@@ -83,13 +85,14 @@ class PictureDownloaded(BaseMsg):
         return self.file_path
 
 
-
+# picture taken topic is useed when we detect that the cameras has trigerreg
+#normaly this topic is publish by the flash
+# if the flash isnt working it can be emited by teh trigger but we gotta make sure the capture worked
 class PictureTaken(BaseMsg):
     TOPIC = "picture_taken"
     def __init__(self):
         self.message_type = "picture_taken"
         self.capture_time = None
-        self.file_path = None
 
     def setCaptureTime(self, time):
         self.capture_time = time
@@ -125,17 +128,35 @@ class TakePicture(BaseMsg):
     def getNbCaptureTodo(self):
         return self.nb_capture_todo
 
+class TriggerAction(BaseMsg):
+    TOPIC = "TRIGGER_ACTION"
+    def __init__(self):
+        self.message_type = "TRIGGER_ACTION"
+        self.unix = None
+        self.action = None
+
+    def setUnixTime(self,unix):
+        self.unix = unix
+    def getUnixTime(self):
+        return self.unix
+    def setActionType(self,action):
+        self.action = action
+    def getActionType(self):
+        return self.action
 
 def MsgHandeler(msg):
-    MsgList = [TakePicture(), PictureTaken(), PictureGeotaged(), PictureDownloaded(), PictureTimeReferenced()]
+    MsgList = [TakePicture(), PictureTaken(), PictureGeotaged(), PictureDownloaded(), PictureTimeReferenced(), TriggerAction()]
     topic = msg.split()[0]
     good_obj = None
 
     for obj in MsgList:
         if topic == obj.TOPIC:
             tmp = obj
-            tmp.decodeMSG(msg)
-            good_obj = tmp
+            msg_type_tmp = tmp.decodeMSG(msg)
+
+            # not implemented yet buf if topic has multiple msg type, we can only return one msg
+            if tmp.message_type == msg_type_tmp:
+                good_obj = tmp
             print(tmp.message_type)
 
     return good_obj

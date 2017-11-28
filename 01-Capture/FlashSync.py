@@ -3,6 +3,7 @@ import time
 import GeneralSettings
 from Gpio import Gpio
 from ZmqUtility import zmqSocket
+from ZmqUtility.MsgDefinition import PictureTaken
 from processAbstract import ProcessAbstract
 
 
@@ -24,10 +25,17 @@ class FlashSync(ProcessAbstract):
         return self.qetTimeFromQueue()
 
 
+    def notifyPictureTaken(self, unix_time):
+        self.addTimeToQueue(unix_time)
+        msgClass = PictureTaken()
+        msgClass.setCaptureTime(unix_time)
+        zmqSocket.publishMsg(self._pubSocket, msgClass.generateMsg())
+
     def _process(self):
-        print("asdasDASDSADSAD")
         self._pubSocket = zmqSocket.createPubSocket()
         last_value = self.DEFAULT_VAUE
+
+        # need a rework
         if not GeneralSettings.FAKEIO:
             print(self.__gpio.getFileName())
             f = open(self.__gpio.getFileName(), "r")
@@ -44,15 +52,15 @@ class FlashSync(ProcessAbstract):
                     # print(val)
                     if last_value == 1 and val == 0: # falling edge detection
                         current = (time.time() -self.FLASHLATENCY)
-                        self.addTimeToQueue(current)
-                        zmqSocket.publishMsg(self._pubSocket, self.FLASH_TOPIC, current)
+                        self.notifyPictureTaken(current)
+
                     last_value = val
                     if val == 0 :
                         print(val)
                     time.sleep(self.PULL_INTERVAL)
 
                 else:
-                    self.addTimeToQueue(time.time())
+                    self.notifyPictureTaken(time.time())
                     time.sleep(1)
 
         f.close()

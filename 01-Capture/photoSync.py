@@ -30,8 +30,9 @@ class PhotoSync(ProcessAbstract):
                 print(self._path)
                 if not self.flashQueue.empty() and not self.flashQueue.empty():
                     filename, file_extension = os.path.splitext(file)
-                    os.rename(self._path + file, self._path + str(self.flashQueue.get())+file_extension)
-                    self.renamedQueue.put(self._path + str(self.flashQueue.get())+file_extension)
+                    rename_target =  self._path + str(self.flashQueue.get())+file_extension
+                    os.rename(self._path + file, rename_target)
+                    self.renamedQueue.put(rename_target)
             listdir = []
             time.sleep(self.POLLINTERVAL)
 

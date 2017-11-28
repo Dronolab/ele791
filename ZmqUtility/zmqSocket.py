@@ -19,7 +19,7 @@ def createSubSocket(topic_filter):
     time.sleep(0.01)
     return socket
 
-def publishMsg(socket, topic, msg):
+def publishMsg(socket, msg):
     socket.send_string(msg)
 
 

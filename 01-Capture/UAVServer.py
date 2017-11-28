@@ -15,7 +15,7 @@ class Server:
 
 
 
-    def serverStart(self):
+    def SubProcessStart(self):
         print("startig photo server")
         self.flash_sync.start()
         self.trigger.start()
