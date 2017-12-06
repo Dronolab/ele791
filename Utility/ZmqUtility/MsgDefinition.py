@@ -89,6 +89,7 @@ class PictureDownloaded(BaseMsg):
 #normaly this topic is publish by the flash
 # if the flash isnt working it can be emited by teh trigger but we gotta make sure the capture worked
 class PictureTaken(BaseMsg):
+
     TOPIC = "picture_taken"
     def __init__(self):
         self.message_type = "picture_taken"
@@ -104,6 +105,7 @@ class PictureTaken(BaseMsg):
 
 class TakePicture(BaseMsg):
     TOPIC = "take_picture"
+    SINGLE = 1
     def __init__(self):
         self.message_type = "take_picture"
         self.capture_type = None

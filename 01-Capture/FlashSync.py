@@ -1,9 +1,10 @@
 import time
 
+from Utility.ZmqUtility.MsgDefinition import PictureTaken
+
 import GeneralSettings
 from Gpio import Gpio
-from ZmqUtility import zmqSocket
-from ZmqUtility.MsgDefinition import PictureTaken
+from Utility.ZmqUtility import zmqSocket
 from processAbstract import ProcessAbstract
 
 

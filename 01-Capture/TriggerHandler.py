@@ -2,10 +2,11 @@
 import time
 from abc import abstractmethod
 
+from Utility.ZmqUtility.MsgDefinition import TriggerAction
+
 import GeneralSettings
 from Gpio import triggerGPIO, Gpio
-from ZmqUtility import zmqSocket
-from ZmqUtility.MsgDefinition import TriggerAction
+from Utility.ZmqUtility import zmqSocket
 from processAbstract import ProcessAbstract
 
 

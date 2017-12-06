@@ -1,8 +1,9 @@
 import time
 
+from Utility.ZmqUtility.MsgDefinition import PictureDownloaded
+
 import GeneralSettings
-from ZmqUtility import zmqSocket
-from ZmqUtility.MsgDefinition import PictureDownloaded
+from Utility.ZmqUtility import zmqSocket
 from processAbstract import ProcessAbstract
 
 if not GeneralSettings.FAKEIO:

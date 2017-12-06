@@ -1,6 +1,7 @@
 import time
 import queue
 import sys, getopt
+from Utility.DataStructure import  attitudeData
 
 sys.path.append('.')
 import RTIMU
@@ -41,7 +42,7 @@ class imuHandler:
             if self.imu.IMURead():
                 current_time = time.time()
                 x, y, z = self.imu.getFusionData()
-                data = imuData(x,y,z, current_time)
+                data = attitudeData(x,y,z, current_time)
                 self.dataQueue.not_empty
                 print("%f %f %f" % (x,y,z))
                 self.dataQueue.put(data)
@@ -50,10 +51,4 @@ class imuHandler:
 
 
 
-class imuData:
-    def __init__(self, pitch, roll, yaw, unix):
-        self.pitch = pitch
-        self.roll = roll
-        self.yaw = yaw
-        self.unix = unix
 

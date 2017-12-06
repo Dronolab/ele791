@@ -1,4 +1,4 @@
-from ZmqUtility import zmqSocket
+from Utility.ZmqUtility import zmqSocket
 
 socket = zmqSocket.createSubSocket("")
 

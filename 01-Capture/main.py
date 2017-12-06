@@ -1,8 +1,11 @@
 from UAVServer import Server
+import time
 
 if __name__ == "__main__":
     UAV_server = Server()
     UAV_server.SubProcessStart()
-    UAV_server.cmdWatcher()
+    while True:
+        time.sleep(1)
+
 
 
