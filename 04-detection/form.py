@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-""" Convolutional network applied to the dronoset dataset classification task.
-"""
 import os
 import glob
 import argparse
@@ -11,32 +9,32 @@ import time
 # Data loading and preprocessing
 from dronoset import extract
 
+import tflearn
+from tflearn.data_utils import shuffle, to_categorical
+from tflearn.layers.core import input_data, dropout, fully_connected
+from tflearn.layers.conv import conv_2d, max_pool_2d
+from tflearn.layers.estimator import regression
+from tflearn.data_preprocessing import ImagePreprocessing
+from tflearn.data_augmentation import ImageAugmentation
 
-def main(options):
-    import tflearn
-    from tflearn.data_utils import shuffle, to_categorical
-    from tflearn.layers.core import input_data, dropout, fully_connected
-    from tflearn.layers.conv import conv_2d, max_pool_2d
-    from tflearn.layers.estimator import regression
-    from tflearn.data_preprocessing import ImagePreprocessing
-    from tflearn.data_augmentation import ImageAugmentation
 
-    CHECKPOINT_BASENAME = 'dronoset_model.tfl'
+class Form(object):
+    """ Form classification module.
 
-    def maybe_load():
-        options = [glob.glob(CHECKPOINT_BASENAME + f) for f in
-                   ['.best*', '*', '.ckpt*']]
-        files = [item for val in options for item in val]
-        if files:
-            ckpt = os.path.realpath(files[0]).split('.')
-            ckpt.pop()
-            ckpt = '.'.join(ckpt)
-            return ckpt
-        else:
-            return None
+    This module is used to classify targets in a cropped image.
 
-    # Convolutional network building
-    def create_model(input_shape, num_classes):
+    Arguments:
+        shape: shape of the network
+        num_classes: number of output classes
+        auto_load: flags to indicate whether or not to pre-load a model.
+
+    Attributes:
+        model: refence to the neural network.
+        checkpoint: filename used to load/save the model.
+    """
+
+    def __init__(self, input_shape, num_classes, auto_load=True):
+        self.checkpoint = self._maybe_load('dronoset_model.tfl')
 
         # Real-time data preprocessing
         img_prep = ImagePreprocessing()
@@ -64,70 +62,97 @@ def main(options):
                              optimizer='adam',
                              loss='categorical_crossentropy',
                              learning_rate=0.001)
-        model = tflearn.DNN(network,
-                            checkpoint_path=CHECKPOINT_BASENAME + '.ckpt',
-                            best_checkpoint_path=CHECKPOINT_BASENAME + '.best',
-                            best_val_accuracy=0.9,
-                            tensorboard_verbose=0)
-        return model
+        self.model = tflearn.DNN(network,
+                                 best_val_accuracy=0.9,
+                                 tensorboard_verbose=0)
 
-    def train_model(model, n_epochs, ckpt_name='model.tfl'):
+        if self.checkpoint and auto_load:
+            print('Loading pretrained model file: %s' % self.checkpoint)
+            self.model.load(self.checkpoint)
+
+    def _maybe_load(self, basename):
+        options = [glob.glob(basename + f) for f in
+                   ['.best*', '*', '.ckpt*']]
+        files = [item for val in options for item in val]
+        if files:
+            ckpt = os.path.realpath(files[0]).split('.')
+            ckpt.pop()
+            ckpt = '.'.join(ckpt)
+            return ckpt
+        else:
+            return None
+
+    def train(self, n_epochs, dataset):
+        """ Train.
+
+        Train model on dataset.
+
+        """
         run_id = int(time.time())
-        (X, Y) = extract.load_data()
+        (X, Y) = dataset
         (X, Y) = shuffle(X, Y)
         Y = to_categorical(Y, len(extract.SHAPE_LABELS))
 
-        model.fit(X, Y,
-                  n_epoch=n_epochs, shuffle=True,
-                  show_metric=True, batch_size=96,
-                  validation_set=0.1,
-                  snapshot_epoch=True,
-                  snapshot_step=500,
-                  run_id='%d_dronoset_cnn' % run_id)
+        self.model.fit(X, Y,
+                       n_epoch=n_epochs, shuffle=True,
+                       show_metric=True, batch_size=96,
+                       validation_set=0.2,
+                       snapshot_epoch=True,
+                       snapshot_step=500,
+                       run_id='%d_dronoset_cnn' % run_id)
 
-        model.save(ckpt_name)
+        print('Saving model checkpoint file as: ', self.checkpoint)
+        self.model.save(self.checkpoint)
 
-    # Main starts here
-    model = create_model([None, 32, 32, 3], 14)
-    ckpt = maybe_load()
-
-    if options.subparser == 'train':
-        if ckpt and options.load:
-            print('Loading pretrained model file: %s' % ckpt)
-            model.load(ckpt)
-        ckpt_name = 'dronoset_model.tfl'
-        train_model(model, options.n_epochs, ckpt_name)
-        print('model final checkpoint file is', ckpt_name)
-    if options.subparser == 'eval':
-        if not ckpt:
-            raise Exception('cannot evaluate untrained model')
-        model.load(ckpt)
-        sample = extract.load_sample(options.file, options.show)
-        pred = model.predict(sample)
+    def eval(self, sample):
+        pred = self.model.predict(sample)
         print(extract.unpack(pred))
 
 
-if __name__ == '__main__':
+def parse_commandline():
     parser = argparse.ArgumentParser(description="Command line interface for "
                                                  "Dronolab's form classifier")
+    parser.add_argument('--no-load', dest='load', action='store_false',
+                        help='do not load model from file')
     subparsers = parser.add_subparsers(dest='subparser', metavar='CMD')
 
-    # train subparser
     parser_train = subparsers.add_parser('train', help='train model')
-    parser_train.add_argument('--no-load', dest='load', action='store_false',
-                              help='do not load model from file')
     parser_train.add_argument('-n', '--n-epochs', type=int, default=100,
                               help='set number of epochs for fitting')
 
-    # eval subparser
     parser_eval = subparsers.add_parser('eval', help='evaluate single image')
     parser_eval.add_argument('file')
     parser_eval.add_argument('--show', action='store_true',
                              help='open image being evaluated')
 
+    parser_run = subparsers.add_parser('run', help='continuously evaluate '
+                                                   'ZMQ requests')
+    parser_run.add_argument('--foo', action='store_true',
+                            help='dummy option')
+
     options = parser.parse_args()
     if not options.subparser:
         parser.parse_args(['--help'])
 
-    print(options)
-    main(options)
+    return options
+
+
+if __name__ == '__main__':
+    options = parse_commandline()
+    loop = 1
+
+    form = Form([None, 32, 32, 3], 14, options.load)
+
+    if options.subparser == 'train':
+        dronoset = extract.load_data(target_only=True)
+        form.train(options.n_epochs, dronoset)
+    if options.subparser == 'eval':
+        start = time.time()
+        sample = extract.load_sample(options.file, options.show)
+        form.eval(sample)
+        end = time.time()
+        print("full eval took: {}s".format(end-start))
+    if options.subparser == 'run':
+        while loop:
+            print('waiting for a ZMQ')
+            loop = 0
