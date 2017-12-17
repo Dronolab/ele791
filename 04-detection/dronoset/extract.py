@@ -104,10 +104,7 @@ def load_sample(filename, show=False):
 
 def unpack(prediction):
     n = np.argmax(prediction)
-    if len(prediction) > 2:
-        return SHAPE_LABELS[n]
-    else:
-        return TARGET_LABELS[n]
+    return SHAPE_LABELS[n]
 
 
 if __name__ == '__main__':
