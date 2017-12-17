@@ -155,7 +155,7 @@ if __name__ == '__main__':
     if options.subparser == 'eval':
         start = time.time()
         im = Image.open(options.file)
-        resized = resize_by_altitude(im, altitude=50)
+        resized = resize_by_altitude(im, altitude=50, ppm=20)
         tiles, boxes = to_nptiles(resized, (32, 32), 0.5)
 
         # convert to a single tensor

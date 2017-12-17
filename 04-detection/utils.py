@@ -2,7 +2,7 @@ from PIL import Image
 import numpy as np
 
 
-def resize_by_altitude(image, altitude, desired_ppm=32):
+def resize_by_altitude(image, altitude, ppm=32):
     """ Resize image based on altitude and expected ground resolution.
 
     Use Angle of view calculations to resize an image based on an altitude and
@@ -11,19 +11,19 @@ def resize_by_altitude(image, altitude, desired_ppm=32):
     Arguments:
         image: Pillow image instance.
         altitude: distance to the ground.
-        desired_ppm: expected ground resolution in pixels per meter (ppm)
+        ppm: expected ground resolution in pixels per meter (ppm)
 
     Returns:
         resized Pillow image.
 
     """
-    # assert isinstance(image, Image.Image), "'image' is not a Pillow Image"
+    assert isinstance(image, Image.Image), "'image' is not a Pillow Image"
     focal = 16.0        # mm
     sensor_h = 15.6     # mm
     sensor_h_px = 3376
 
     actual_ppm = sensor_h_px / ((sensor_h / focal) * altitude)
-    rsz = desired_ppm / actual_ppm
+    rsz = ppm / actual_ppm
 
     size = image.size
     new_size = tuple(int(s * rsz) for s in size)
