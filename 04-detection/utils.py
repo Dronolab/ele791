@@ -28,7 +28,7 @@ def resize_by_altitude(image, altitude, ppm=32):
     size = image.size
     new_size = tuple(int(s * rsz) for s in size)
 
-    return image.resize(new_size)
+    return image.resize(new_size), new_size
 
 
 def to_nptiles(image, tile_shape=(32, 32), overlap=0.5):
