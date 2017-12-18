@@ -22,6 +22,10 @@ setup_tensorflow() {
 	echo also installing tflearn
 	pip install tflearn
 
+	echo also install extra libs
+	pip install opencv-python
+	pip install webcolors
+
 	echo "you can now run 'source ${PRJNAME}/bin/activate' and start working"
 }
 
