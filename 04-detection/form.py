@@ -127,8 +127,9 @@ def parse_commandline():
 
     parser_run = subparsers.add_parser('run', help='continuously evaluate '
                                                    'ZMQ requests')
-    parser_run.add_argument('--foo', action='store_true',
-                            help='dummy option')
+    parser_run.add_argument('--foo', action='store_true', help='dummy option')
+    parser_test = subparsers.add_parser('test', help='used to test stuff')
+    parser_test.add_argument('file')
 
     options = parser.parse_args()
     if not options.subparser:
@@ -151,6 +152,22 @@ if __name__ == '__main__':
         sample = extract.load_sample(options.file, options.show)
         out = form.eval(sample)
         print("prediction is :", out)
+    if options.subparser == 'test':
+        from utils import resize_by_altitude, to_nptiles
+        from PIL import Image
+        import numpy as np
+
+        im = Image.open(options.file)
+        resized, factor = resize_by_altitude(im, altitude=50, ppm=20)
+        tiles, boxes = to_nptiles(resized, (32, 32), 0.5)
+
+        data = np.empty(shape=(1, 32, 32, 3))
+        out = []
+
+        for i in tiles:
+            data[0, :, :, :] = i
+            out.append(form.eval(data))
+
     if options.subparser == 'run':
         while loop:
             print('waiting for a ZMQ')
