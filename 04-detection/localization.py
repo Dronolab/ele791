@@ -104,10 +104,15 @@ class Localizer(object):
         Evaluate samples.
 
         """
+        import cv2
 
         im = Image.open(f)
         resized, factor = resize_by_altitude(im, altitude=50, ppm=20)
         tiles, boxes = to_nptiles(resized, (32, 32), 0.5)
+
+        out = cv2.imread(f)
+        out = cv2.resize(out, factor)
+        rec = out.copy()
 
         # convert to a single tensor
         n, w, h, c = tiles.shape
@@ -120,7 +125,16 @@ class Localizer(object):
         for i, p in enumerate(prediction):
             if p[0] >= threshold:
                 print('idx: {}, {}'.format(i, prediction[i]))
-                resized.crop(boxes[i]).save('trash/auto-{}.jpg'.format(i))
+                pt1 = (int(boxes[i][0]), int(boxes[i][1]))
+                pt2 = (int(boxes[i][2]), int(boxes[i][3]))
+                cv2.rectangle(rec, pt1, pt2, (0, 0, 255), -1)
+                cv2.addWeighted(rec, 0.5, out, 1 - 0.5, 0, out)
+                # resized.crop(boxes[i]).save('trash/auto-{}.jpg'.format(i))
+                # resized.crop(boxes[i]).show()
+        cv2.imshow("out", out)
+        cv2.waitKey(0)
+
+        # cv2.imwrite('trash/auto-test.png', out)
 
 
 def parse_commandline():
