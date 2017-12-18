@@ -106,7 +106,7 @@ class Form(object):
 
     def eval(self, sample):
         pred = self.model.predict(sample)
-        print(extract.unpack(pred))
+        return extract.unpack(pred)
 
 
 def parse_commandline():
@@ -143,16 +143,17 @@ if __name__ == '__main__':
 
     form = Form([None, 32, 32, 3], 14, options.load)
 
+    start = time.time()
     if options.subparser == 'train':
         dronoset = extract.load_data(target_only=True)
         form.train(options.n_epochs, dronoset)
     if options.subparser == 'eval':
-        start = time.time()
         sample = extract.load_sample(options.file, options.show)
-        form.eval(sample)
-        end = time.time()
-        print("full eval took: {}s".format(end-start))
+        out = form.eval(sample)
+        print("prediction is :", out)
     if options.subparser == 'run':
         while loop:
             print('waiting for a ZMQ')
             loop = 0
+    end = time.time()
+    print("full elapse took: {}s".format(end-start))
