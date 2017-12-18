@@ -98,19 +98,27 @@ class Localizer(object):
         print('Saving model checkpoint file as: ', self.checkpoint)
         self.model.save(self.checkpoint)
 
-    def eval(self, tiles):
+    def eval(self, f, threshold=0.95):
         """ Eval.
 
         Evaluate samples.
 
         """
+
+        im = Image.open(f)
+        resized, factor = resize_by_altitude(im, altitude=50, ppm=20)
+        tiles, boxes = to_nptiles(resized, (32, 32), 0.5)
+
+        # convert to a single tensor
+        n, w, h, c = tiles.shape
+        tiles = np.reshape(tiles, (n, w*h*c))
         # feed through model
         prediction = self.model.predict(tiles)
         print(prediction.shape, prediction[0])
 
         # FIXME: save to disk
         for i, p in enumerate(prediction):
-            if p[0] >= 0.96:
+            if p[0] >= threshold:
                 print('idx: {}, {}'.format(i, prediction[i]))
                 resized.crop(boxes[i]).save('trash/auto-{}.jpg'.format(i))
 
@@ -154,15 +162,7 @@ if __name__ == '__main__':
         localizer.train(options.n_epochs, dronoset)
     if options.subparser == 'eval':
         start = time.time()
-        im = Image.open(options.file)
-        resized = resize_by_altitude(im, altitude=50, ppm=20)
-        tiles, boxes = to_nptiles(resized, (32, 32), 0.5)
-
-        # convert to a single tensor
-        n, w, h, c = tiles.shape
-        tiles = np.reshape(tiles, (n, w*h*c))
-
-        localizer.eval(tiles)
+        localizer.eval(options.file)
         end = time.time()
         print("full eval took: {}s".format(end-start))
     if options.subparser == 'run':
