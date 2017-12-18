@@ -58,8 +58,8 @@ def to_nptiles(image, tile_shape=(32, 32), overlap=0.5):
     boxes = []
     (left, upper, right, lower) = (0, 0, box_width, box_height)
 
-    while lower < image_height:
-        while right < image_width:
+    while lower < image_height + (1 - overlap) * box_height / 2:
+        while right < image_width + (1 - overlap) * box_width / 2:
             t = image.crop((left, upper, right, lower))
             tiles[i, :, :, :] = np.asarray(t)
             boxes.append((left, upper, right, lower))
