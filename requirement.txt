@@ -1,0 +1,4 @@
+py3exiv2
+zmq
+gphoto2
+pymavlink

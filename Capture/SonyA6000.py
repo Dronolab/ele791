@@ -1,7 +1,9 @@
 import os
 
 import gphoto2 as gp
-
+import time
+import GeneralSettings
+from GeneralSettings import logger
 
 class ptpCamera:
     EVENT_FILE_ADDED = gp.GP_EVENT_FILE_ADDED
@@ -9,18 +11,28 @@ class ptpCamera:
     EVENT_PTP_CONFIG = 0
 
     def __init__(self):
-        print("init camera")
-        self.camera_ready = True
+        # print("init camera")
+        self.camera_ready = False
         self.__context = gp.gp_context_new()
         self.__camera = gp.check_result(gp.gp_camera_new())
-        try:
-            gp.gp_camera_init(self.__camera, self.__context)
-        except gp.GPhoto2Error as ex:
-            if ex.code == gp.GP_ERROR_MODEL_NOT_FOUND:
+        while True:
+            # print("Connecting Camera")
+            error = gp.gp_camera_init(self.__camera, self.__context)
+            if error >= gp.GP_OK:
+                # operation completed successfully so exit loop
+                # print("Camera init successfull")
+                self.camera_ready = True
+                break
+            if error != gp.GP_ERROR_MODEL_NOT_FOUND:
+                # some other error we can't handle here
+                if(error == -7):
+                    print("Try as super user")
                 self.camera_ready = False
-            # some other error we can't handle here
-            raise
-        
+                print(gp.GPhoto2Error(error))
+
+            # no camera, try again in 2 seconds
+            time.sleep(2)
+
     def usb_capture(self):
         if self.camera_ready:
                 file_path = gp.check_result(gp.gp_camera_capture(
@@ -29,14 +41,19 @@ class ptpCamera:
         else:
             return None
 
-    def download_file_from_camera(self, file_path, Targer="./Photo"):
+    def download_file_from_camera(self, file_path, Targer= GeneralSettings.capture_dir):
         if not os.path.exists(Targer):
-            os.makedirs(Targer)
-        target = os.path.join(Targer, file_path.name)
+            os.makedirs(Targer, exist_ok=True)
+
+        target = os.path.join(Targer, "capt%s.jpg" %(time.time()))
+        # target = os.path.join(Targer, file_path.name)
         camera_file = gp.check_result(gp.gp_camera_file_get(
             self.__camera, file_path.folder, file_path.name,
             gp.GP_FILE_TYPE_NORMAL, self.__context))
         gp.check_result(gp.gp_file_save(camera_file, target))
+
+        return target
+
     def list_files(self, path='/'):
         result = []
         # get files
@@ -54,23 +71,27 @@ class ptpCamera:
         return result
 
     def watch_event(self, __timeout=10000):
-        event = self.__camera.wait_for_event(__timeout, self.__context)
-        return event
+        try:
 
-    def getEventType(self,event):
+            event = self.__camera.wait_for_event(__timeout, self.__context)
+            return event
+
+        except (gp.GPhoto2Error, IOError):
+            print("\nCamera disconnected!")
+
+    def getEventType(self, event):
         return event[0]
 
     def downloadPictureFromEvent(self, event):
         if event[0] == self.EVENT_FILE_ADDED:
-            self.download_file_from_camera(event[1])
+            logger.debug("New file added to camera %s" %event[1])
+            return self.download_file_from_camera(event[1])
 
+        else:
+            return None
 
     def __del__(self):
-        print("del camera")
+        #print("del camera")
         if self.camera_ready:
-            print( gp.check_result(gp.gp_camera_exit(self.__camera, self.__context)))
+            gp.check_result(gp.gp_camera_exit(self.__camera))
 
-
-class Event:
-    NEW_PICTURE = 1
-    CONFIG = 0

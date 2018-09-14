@@ -1,0 +1,3 @@
+#!/bin/bash
+
+sudo /usr/bin/python3 /home/nvidia/src/ele791/PrimaryApp/main.py

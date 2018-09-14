@@ -1,0 +1,14 @@
+[Unit]
+Description=ele791 Main service
+After=network.target
+
+[Service]
+Type=forking
+WorkingDirectory=/home/nvidia/src/ele791/PrimaryApp/
+ExecStart=/usr/bin/python3 /home/nvidia/src/ele791/PrimaryApp/main.py
+Restart=always
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target
+
